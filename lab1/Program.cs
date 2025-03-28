@@ -11,28 +11,30 @@
         List<int[,]> matrices = Matrix.ReadMatricesFromFile(filePath);
 
         foreach(var matrix in matrices){
-            Console.WriteLine("Matrix:");
-            Matrix.PrintMatrix(matrix);
-            Console.WriteLine("Result:");
             var winner = FindWin(matrix);
             Console.WriteLine(winner?.ToString());
         }
     }
 
     static Winner FindWin(int[,] matrix){
-        var winner = CheckHorizontally(matrix);
-        if(winner.winnerNumber != 0){
-            return winner;
+        var checkFunctions = new Func<int[,], Winner>[]
+        {
+            CheckHorizontally,
+            CheckVertically,
+            CheckByMainDiagonal,
+            CheckBySecondaryDiagonal
+        };
+
+        foreach (var check in checkFunctions)
+        {
+            var winner = check(matrix);
+            if (winner.winnerNumber != 0)
+            {
+                return winner;
+            }
         }
-        winner = CheckVertically(matrix);
-        if(winner.winnerNumber != 0){
-            return winner;
-        }
-        winner = CheckByMainDiagonal(matrix);
-        if(winner.winnerNumber != 0){
-            return winner;
-        }
-        return CheckBySecondaryDiagonal(matrix);
+
+        return new Winner(0);
     }
 
     static Winner CheckHorizontally(int[,] matrix){
@@ -219,10 +221,9 @@ public class Winner{
         this.winningCell = winningCell;
     }
     public override string ToString(){
-        if(winningCell == null){
-            return this.winnerNumber+"\n";
-        }
-        return this.winnerNumber+"\n"+this.winningCell?.Item1 + " " + winningCell?.Item2;
+         return winningCell == null 
+        ? $"{winnerNumber}\n" 
+        : $"{winnerNumber}\n{winningCell.Value.Item1} {winningCell.Value.Item2}\n";
     }  
 }
 

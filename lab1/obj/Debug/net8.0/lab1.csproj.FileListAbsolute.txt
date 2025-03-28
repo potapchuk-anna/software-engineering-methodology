@@ -26,3 +26,4 @@ D:\KPI\hitsko\software-engineering-methodology\lab1\obj\Debug\net8.0\refint\lab1
 D:\KPI\hitsko\software-engineering-methodology\lab1\obj\Debug\net8.0\lab1.pdb
 D:\KPI\hitsko\software-engineering-methodology\lab1\obj\Debug\net8.0\lab1.genruntimeconfig.cache
 D:\KPI\hitsko\software-engineering-methodology\lab1\obj\Debug\net8.0\ref\lab1.dll
+D:\KPI\hitsko\software-engineering-methodology\lab1\obj\Debug\net8.0\lab1.sourcelink.json

@@ -10,10 +10,15 @@
         }
         List<int[,]> matrices = Matrix.ReadMatricesFromFile(filePath);
 
+        string result = "";
+
         foreach(var matrix in matrices){
             var winner = FindWin(matrix);
+            result+=winner?.ToString();
             Console.WriteLine(winner?.ToString());
         }
+
+        File.WriteAllText("output.txt", result);
     }
 
     static Winner FindWin(int[,] matrix){

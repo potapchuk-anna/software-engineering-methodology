@@ -8,20 +8,27 @@
             Console.WriteLine("Such file does not exists");
             return;
         }
-        List<int[,]> matrices = Matrix.ReadMatricesFromFile(filePath);
+        
+        ProcessFile(filePath);
+    }
 
+    static void ProcessFile(string filePath)
+    {
+        List<int[,]> matrices = Matrix.ReadMatricesFromFile(filePath);
         string result = "";
 
-        foreach(var matrix in matrices){
-            var winner = FindWin(matrix);
-            result+=winner?.ToString();
+        foreach (var matrix in matrices)
+        {
+            var winner = FindWinner(matrix);
+            result += winner?.ToString();
             Console.WriteLine(winner?.ToString());
         }
 
         File.WriteAllText("output.txt", result);
     }
 
-    static Winner FindWin(int[,] matrix){
+
+    static Winner FindWinner(int[,] matrix){
         var checkFunctions = new Func<int[,], Winner>[]
         {
             CheckHorizontally,
@@ -209,66 +216,4 @@
 
         return new Winner(0);
     }
-}
-
-public class Winner{
-    public int winnerNumber;
-    public (int,int)? winningCell;
-
-    public Winner(int winnerNumber)
-    {
-        this.winnerNumber = winnerNumber;
-    }
-
-     public Winner(int winnerNumber, (int,int) winningCell)
-    {
-        this.winnerNumber = winnerNumber;
-        this.winningCell = winningCell;
-    }
-    public override string ToString(){
-         return winningCell == null 
-        ? $"{winnerNumber}\n" 
-        : $"{winnerNumber}\n{winningCell.Value.Item1} {winningCell.Value.Item2}\n";
-    }  
-}
-
-public class Matrix{
-
-    public static List<int[,]> ReadMatricesFromFile(string filePath)
-    {
-        List<int[,]> matrices = new List<int[,]>();
-        string[] lines = File.ReadAllLines(filePath);
-        int matrixCount = int.Parse(lines[0]); // Read the number of matrices
-
-        int index = 1; // Start reading matrices after the first line
-        for (int m = 0; m < matrixCount; m++)
-        {
-            int[,] matrix = new int[19, 19];
-            for (int i = 0; i < 19; i++)
-            {
-                int[] row = lines[index].Split(' ').Select(int.Parse).ToArray();
-                for (int j = 0; j < 19; j++)
-                {
-                    matrix[i, j] = row[j];
-                }
-                index++;
-            }
-            matrices.Add(matrix);
-        }
-
-        return matrices;
-    }
-
-    public static void PrintMatrix(int[,] matrix)
-    {
-        for (int i = 0; i < matrix.GetLength(0); i++)
-        {
-            for (int j = 0; j < matrix.GetLength(1); j++)
-            {
-                Console.Write(matrix[i, j] + " ");
-            }
-            Console.WriteLine();
-        }
-    }
-
 }

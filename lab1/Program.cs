@@ -1,5 +1,7 @@
 ﻿class Program
 {
+    const int WINNING_COMBINATION_AMOUNT = 5;
+     const int MATRIX_ROW_COLUMN_AMOUNT = 19;
     static void Main(string[] args)
     {
         Console.WriteLine("Enter file name:");
@@ -29,43 +31,67 @@
 
 
     static Winner FindWinner(int[,] matrix){
-        var checkFunctions = new Func<int[,], Winner>[]
+        // var checkFunctions = new Func<int[,], Winner>[]
+        // {
+        //     CheckByMainDiagonal,
+        //     CheckBySecondaryDiagonal
+        // };
+
+        // foreach (var check in checkFunctions)
+        // {
+        //     var winner = check(matrix);
+        //     if (winner.winnerNumber != 0)
+        //     {
+        //         return winner;
+        //     }
+        // }
+
+        var checkFunctionsBool = new Func<int[,], bool, Winner>[]
         {
-            CheckHorizontally,
-            CheckVertically,
-            CheckByMainDiagonal,
-            CheckBySecondaryDiagonal
+            CheckHorizontallyOrVertically,
+            CheckHorizontallyOrVertically,
+            CheckDiagonal,
+            CheckDiagonal
         };
 
-        foreach (var check in checkFunctions)
+        bool isFirstDirection = true;
+        foreach (var check in checkFunctionsBool)
         {
-            var winner = check(matrix);
+            var winner = check(matrix, isFirstDirection);
             if (winner.winnerNumber != 0)
             {
                 return winner;
             }
+            isFirstDirection = !isFirstDirection;
         }
 
         return new Winner(0);
     }
 
-    static Winner CheckHorizontally(int[,] matrix){
+    static Winner CheckHorizontallyOrVertically(int[,] matrix, bool isHorizontally){
         int k=0;
         Winner? winner = null;
-        for(int i = 0; i<matrix.GetLength(0);i++){
 
-            for(int j=1;j<matrix.GetLength(1);j++){
+        for(int i = 0; i<MATRIX_ROW_COLUMN_AMOUNT;i++){
 
-                if(matrix[i,j] == matrix[i,j-1] && (matrix[i,j] == 1 || matrix[i,j] == 2)){
+            for(int j=1;j<MATRIX_ROW_COLUMN_AMOUNT;j++){
+
+                var rowIndex = isHorizontally ? i : j;
+                var columnIndex = isHorizontally ? j : i;
+
+                var previousCellIndexes = isHorizontally ? (rowIndex, columnIndex-1) : (rowIndex-1, columnIndex);
+
+                if(matrix[rowIndex,columnIndex] == matrix[previousCellIndexes.Item1,previousCellIndexes.Item2] && (matrix[rowIndex,columnIndex] == 1 || matrix[rowIndex,columnIndex] == 2)){
                     k++;
                 }
                 else {
                     k=0;
                 }
-                if(k==4){
-                   winner = new Winner(matrix[i,j-4], (i+1, j-3));
+                if(k==WINNING_COMBINATION_AMOUNT-1){
+                    var winningCellIndexes = isHorizontally ? (rowIndex, columnIndex-(WINNING_COMBINATION_AMOUNT - 1)) : (rowIndex-(WINNING_COMBINATION_AMOUNT - 1), columnIndex);
+                   winner = new Winner(matrix[winningCellIndexes.Item1,winningCellIndexes.Item2], (winningCellIndexes.Item1+1, winningCellIndexes.Item2+1));
                 }
-                else if(k>4){
+                else if(k>WINNING_COMBINATION_AMOUNT-1){
                     winner = null;
                 }
             }
@@ -77,56 +103,36 @@
         return new Winner(0);
     }
 
-    static Winner CheckVertically(int[,] matrix){
-        int k=0;
+    static Winner CheckDiagonal(int[,] matrix, bool isMainDiagonal)
+    {
+         int k=0;
         Winner? winner = null;
-        for(int j = 0; j<matrix.GetLength(1);j++){
 
-            for(int i=1;i<matrix.GetLength(0);i++){
+        int amountAndCombinationGap = MATRIX_ROW_COLUMN_AMOUNT - WINNING_COMBINATION_AMOUNT;
 
-                if(matrix[i,j] == matrix[i-1,j] && (matrix[i,j] == 1 || matrix[i,j] == 2)){
+        int colStart = isMainDiagonal ? amountAndCombinationGap : 1;
+
+        // Lower triangle
+        for(int col=colStart; isMainDiagonal ? col>0 : col <= amountAndCombinationGap; col = isMainDiagonal ? col-1 : col+1){
+            int j = isMainDiagonal ? 1 : MATRIX_ROW_COLUMN_AMOUNT-2;
+
+            for(int i = col+1; i<MATRIX_ROW_COLUMN_AMOUNT; i++){
+                var previousCellColumnIndex = isMainDiagonal ? j-1 : j+1;
+                if(matrix[i,j] == matrix[i-1,previousCellColumnIndex] && (matrix[i,j] == 1 || matrix[i,j] == 2)){
                     k++;
                 }
                 else {
                     k=0;
                 }
-                if(k==4){
-                   winner = new Winner(matrix[i-4,j], (i-3, j+1));
+                if(k==WINNING_COMBINATION_AMOUNT-1){
+                    var winningColumnIndex = isMainDiagonal ? j-(WINNING_COMBINATION_AMOUNT - 1) : j+(WINNING_COMBINATION_AMOUNT - 1);
+                    var winningRowIndex = i-(WINNING_COMBINATION_AMOUNT - 1);
+                   winner = new Winner(matrix[winningRowIndex, winningColumnIndex], (winningRowIndex + 1, winningColumnIndex + 1));
                 }
-                else if(k>4){
+                else if(k>WINNING_COMBINATION_AMOUNT-1){
                     winner = null;
                 }
-            }
-            if(winner != null){
-                return winner;
-            }
-            k=0;
-        }
-        return new Winner(0);
-    }
-
-    static Winner CheckByMainDiagonal(int[,] matrix){
-        int k=0;
-        Winner? winner = null;
-        int n = matrix.GetLength(0);
-
-         // Lower triangle
-        for(int col=14; col>0; col--){
-            int j=1;
-            for(int i = col+1; i<n; i++){
-                if(matrix[i,j] == matrix[i-1,j-1] && (matrix[i,j] == 1 || matrix[i,j] == 2)){
-                    k++;
-                }
-                else {
-                    k=0;
-                }
-                if(k==4){
-                   winner = new Winner(matrix[i-4,j-4], (i-3, j-3));
-                }
-                else if(k>4){
-                    winner = null;
-                }
-                j++;
+                j = isMainDiagonal ? j+1 : j-1;
             }
             if(winner != null){
                 return winner;
@@ -134,79 +140,27 @@
             k=0;
         }
 
-        // Upper triangle (including main diagonal)
-        for(int col=0; col<=14; col++){
+        // Upper triangle
+        colStart = isMainDiagonal ? 0 : WINNING_COMBINATION_AMOUNT-1;
+        for(int col=colStart; isMainDiagonal ? col<=amountAndCombinationGap : col < MATRIX_ROW_COLUMN_AMOUNT; col++){
             int i=1;
-            for(int j = col+1; j<n; j++){
-                if(matrix[i,j] == matrix[i-1,j-1] && (matrix[i,j] == 1 || matrix[i,j] == 2)){
+            for(int j = isMainDiagonal ? col+1 : col-1; isMainDiagonal ? j < MATRIX_ROW_COLUMN_AMOUNT : j >= 0; j = isMainDiagonal ? j+1 : j-1){
+                var prevColumnIndex = isMainDiagonal? j-1:j+1;
+                if(matrix[i,j] == matrix[i-1,prevColumnIndex] && (matrix[i,j] == 1 || matrix[i,j] == 2)){
                     k++;
                 }
                 else {
                     k=0;
                 }
-                if(k==4){
-                   winner = new Winner(matrix[i-4,j-4], (i-3, j-3));
+                if(k==WINNING_COMBINATION_AMOUNT-1){
+                    var winningColumnIndex=isMainDiagonal ? j-(WINNING_COMBINATION_AMOUNT - 1) : j+(WINNING_COMBINATION_AMOUNT - 1);
+                    var winningRowIndex = i-(WINNING_COMBINATION_AMOUNT - 1);
+                   winner = new Winner(matrix[winningRowIndex, winningColumnIndex], (winningRowIndex + 1, winningColumnIndex + 1));
                 }
-                else if(k>4){
+                else if(k>WINNING_COMBINATION_AMOUNT-1){
                     winner = null;
                 }
                 i++;
-            }
-            if(winner != null){
-                return winner;
-            }
-            k=0;
-        }
-
-        return new Winner(0);
-    }
-
-    static Winner CheckBySecondaryDiagonal(int[,] matrix){
-        int k=0;
-        Winner? winner = null;
-        int n = matrix.GetLength(0);
-
-        // Upper triangle (including main diagonal)
-        for(int col = 4; col < n; col++){
-            int i = 1;
-            for(int j = col-1; j >= 0; j--){
-                if(matrix[i,j] == matrix[i-1,j+1] && (matrix[i,j] == 1 || matrix[i,j] == 2)){
-                    k++;
-                }
-                else {
-                    k=0;
-                }
-                if(k==4){
-                   winner = new Winner(matrix[i-4,j+4], (i-4+1, j+4+1));
-                }
-                else if(k>4){
-                    winner = null;
-                }
-                i++;
-            }
-            if(winner != null){
-                return winner;
-            }
-            k=0;
-        }
-
-         // Lower triangle
-        for(int col = 1; col <= 14; col++){
-            int j = n-2;
-            for(int i = col+1; i <n; i++){
-                if(matrix[i,j] == matrix[i-1,j+1] && (matrix[i,j] == 1 || matrix[i,j] == 2)){
-                    k++;
-                }
-                else {
-                    k=0;
-                }
-                if(k==4){
-                   winner = new Winner(matrix[i-4,j+4], (i-4+1, j+4+1));
-                }
-                else if(k>4){
-                    winner = null;
-                }
-                j--;
             }
             if(winner != null){
                 return winner;

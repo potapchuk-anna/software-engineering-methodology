@@ -31,20 +31,6 @@
 
 
     static Winner FindWinner(int[,] matrix){
-        // var checkFunctions = new Func<int[,], Winner>[]
-        // {
-        //     CheckByMainDiagonal,
-        //     CheckBySecondaryDiagonal
-        // };
-
-        // foreach (var check in checkFunctions)
-        // {
-        //     var winner = check(matrix);
-        //     if (winner.winnerNumber != 0)
-        //     {
-        //         return winner;
-        //     }
-        // }
 
         var checkFunctionsBool = new Func<int[,], bool, Winner>[]
         {
